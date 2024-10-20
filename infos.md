@@ -1,35 +1,50 @@
 Bancos de dados:
 ```
-Dei preferência por utilizar o postgresql + Mongo
-    - mongo foi pedido no teste,
-    - postgresql é o banco mais utilizado... Porém como estou utilizando ORM não faz diferença (o orm escolhido é bem parecido porém tenho experiência nos 4 mais famosos [mongoose, squelize, typeorm, prisma])
+Optei por utilizar PostgreSQL junto com MongoDB.
+- O Mongo foi uma exigência do teste.
+- O PostgreSQL é um dos bancos mais populares, e como estou usando um ORM, a diferença entre eles acaba sendo pequena. O ORM que escolhi é bastante similar ao dos outros bancos, porém tenho experiência com os quatro mais famosos: Mongoose, Sequelize, TypeORM e Prisma.
 ```
 
 Projeto:
 ```
-- Comecei o projeto com nest porém olhando os dados da vaga aparentemente não utilizam nest então optei por refazer com express puro.
-- Utilizo o editor config para organizar os arquivos (o husky as vezes quebra.)
+- Comecei o projeto com NestJS, mas percebi que, de acordo com os requisitos da vaga, eles não utilizam Nest. Por isso, decidi reescrever tudo usando Express puro.
+- Utilizo o EditorConfig para manter os arquivos organizados, pois o Husky às vezes crie algumas travas.
 ```
 
 Filmes e Temas:
 ```
-- Se ao iniciar o código alguma das 2 tabelas do Mongo estiverem vazias, o código gera as tabelas antes de dar início ao código
-- Criação de temas e filmes
-  - Ao criar ele pega todos que já existem e não adiciona novamente, assim evitando dados duplicados ou quebrar já que o banco esta configurado para dados únicos.
-- Cron Job
-  - Foi adicionado de forma simples uma cronJob que valida a cada 2 horas os temas da API
+- Se, ao iniciar o código, alguma das duas tabelas do Mongo estiver vazia, o sistema gera as tabelas antes de seguir adiante.
+- Criação de temas e filmes:
+  - Ao criar novos registros, o código verifica todos os existentes e evita a duplicação, garantindo que os dados no banco sejam únicos.
+- Cron Job:
+  - Adicionei uma Cron Job de forma simples que valida os temas da API a cada duas horas.
 ```
 
-No código tive 2 opções:
-1- Utilizar uma função que busca os filmes pelo tema puxava múltiplos filmes demorou exatamente 3 horas sem contar com os erros.
-2- Consegui baixar na internet o tijolo deles porém no tijolo não possuia tema. Para corrigir isso eu teria que passar um pra um de todos os dados, lembrando que são cerca de 3 requisições por segundo.
-3- Deixei o código que utilizei dentro do projeto ./PickMovies.ts (caso fiquem em dúvida de como foi feito.);
+Considerações do Código:
+```
+Tive duas opções principais:
+1. Utilizar uma função que busca os filmes por tema, puxando múltiplos filmes. Essa abordagem levou exatamente 3 horas, sem contar os erros.
+2. Consegui encontrar na internet o "tijolo" deles, mas ele não continha os temas. Para corrigir isso, eu teria que atualizar manualmente todos os dados, lembrando que são cerca de 3 requisições por segundo.
+3. Deixei o código que utilizei dentro do projeto em `./PickMovies.ts` (caso tenham dúvidas sobre como foi feito).
 
-Pensei em colocar mais usuários para baixar os filmes assim aceleraria o processo, mas como tive que sair de casa aproveitei para deixar um só e não explodir meu pc.
+Pensei em adicionar mais usuários para acelerar o download dos filmes, porém meu pc iria explodir com qualquer milimetro a mais...
+```
 
 User:
 ```
-- Por o codigo não ser tão verboso deixei junto a parte de login com usuario e deixei o mais pratico possivel as 4 possibilidades de codigo.
-- Troca de senha e uma etapa de 2 fatores sem email...
+- Por o codigo não ser tão verboso deixei junto a parte de login com usuario e deixei o mais pratico possivel.
+- A troca de senha inclui uma etapa de autenticação de 2 fatores, mas sem e-mail...
 - (me) do usuario e possivel ver qual o pacote atual.
+```
+
+Pack:
+```
+- O sistema de packs funciona no modelo 1 para 1; ou seja, um usuário pode ter apenas um pack.
+- O nome do pacote do usuário é formado pelos dois primeiros nomes, seguido da palavra "pack".
+- Não é possível acessar o pack dos amiguinhos.
+```
+
+Watched:
+```
+- Após os filmes, a tabela "watched" foi a que mais teve alterações. Agora, um filme só pode ser assistido uma vez e os temas esperados devem vir "juntos" ao filme. Se o filme existir, mas o tema não, o sistema retornará um erro.
 ```
