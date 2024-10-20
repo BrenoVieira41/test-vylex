@@ -1,21 +1,15 @@
 import { Router } from 'express';
 import ThemeController from './ThemeController';
+import authMiddleware from '../Authenticate';
 
 const router = Router();
 
-// @ts-ignore
 router.get('/get/:id', ThemeController.get);
-// @ts-ignore
 router.get('/list', ThemeController.find);
-// @ts-ignore
 router.get('/api', ThemeController.api);
-// @ts-ignore
 router.get('/count', ThemeController.count);
-// @ts-ignore
-router.get('/order', ThemeController.order);
-// @ts-ignore
+router.get('/order', authMiddleware, ThemeController.order);
 router.post('/', ThemeController.create);
-// @ts-ignore
 
 
 export default router;

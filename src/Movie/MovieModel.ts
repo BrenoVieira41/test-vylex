@@ -8,9 +8,9 @@ export interface Movies extends Document {
 }
 
 export interface MoviesPagination extends Pagination {
-  name?: string;
+  title?: string;
   orderBy?: OrderEnum;
-  theme_id: number[] | any;
+  themes: number[] | any;
 }
 
 export interface MoviesResponse {

@@ -1,15 +1,21 @@
 import { FilterQuery } from 'mongoose';
-import { Pagination, PaginationType } from '../Utils/PaginationInterface';
+import { OrderEnum, PaginationType } from '../Utils/PaginationInterface';
 import {
   clearMongoResponse,
   createError,
   isNumeric,
   paginate,
   setPagination,
+  validateFields,
   validatePagination,
+  validateThemesId,
 } from '../Utils/UtilsService';
-import { GenreResponse, Themes } from './ThemeModel';
+import { GenreResponse, Themes, ThemesPagination } from './ThemeModel';
 import ThemeRepository from './ThemeRepository';
+import UserService from '../User/UserService';
+import { CustomJwtPayload } from '../User/UserEntity';
+import { INVALID_USER_ERROR } from '../User/UserConstants';
+import { NO_PACK_AREADY_EXIST } from '../Pack/PackConstants';
 
 class ThemeService {
   private readonly themeRepository: ThemeRepository;
@@ -67,17 +73,32 @@ class ThemeService {
     }
   }
 
-  async findThemes(query: Pagination): Promise<PaginationType<Themes>> {
-    validatePagination(query);
+  async findThemes(query: ThemesPagination | any, user: CustomJwtPayload): Promise<PaginationType<Themes>> {
+    const { size, offset, orderBy, ...rest } = query;
+    validatePagination({ size, offset });
+    validateFields(rest);
 
     try {
       const { size, offset } = setPagination(query);
-      const { themes, total } = await this.themeRepository.findAllPaginated(size, offset);
+
+      const myUser = await UserService.me(user);
+
+      if (!myUser) throw createError(INVALID_USER_ERROR, 401);
+      if (!myUser.packs) throw createError(NO_PACK_AREADY_EXIST, 400);
+
+      const userThemes = myUser.packs.themes;
+      const newQuery: FilterQuery<Themes> = { id: { $in: userThemes } };
+
+      if (orderBy && !Object.values(OrderEnum).includes(orderBy)) {
+        throw createError('orderBy must be either "asc" or "desc"', 400);
+      }
+
+      const { themes, total } = await this.themeRepository.findAllPaginated(newQuery, size, offset, orderBy);
 
       return paginate(size, offset, themes, total);
     } catch (error: any) {
-      console.error(error);
-      throw createError(error.message, 500);
+      const status = error.status ? error.status : 500;
+      throw createError(error.message, status);
     }
   }
 
@@ -107,6 +128,22 @@ class ThemeService {
 
       if (themesIds && themesIds.length > 0) {
         query.id = { $in: themesIds };
+      }
+
+      const themes = await this.themeRepository.find(query);
+      return themes.map((it: any) => clearMongoResponse(it));
+    } catch (error: any) {
+      console.error(error);
+      throw createError(error.message, 500);
+    }
+  }
+
+  public async findByPack(ids?: number[]): Promise<Themes[]> {
+    try {
+      const query: FilterQuery<Themes> = {};
+
+      if (ids && ids.length > 0) {
+        query.id = { $in: ids };
       }
 
       const themes = await this.themeRepository.find(query);

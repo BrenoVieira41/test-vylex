@@ -1,4 +1,14 @@
-export interface Pack {
+export interface PackInput {
+  themes: number[];
+}
+
+export interface CreatePack {
+  themes: number[];
+  name: string;
+  user_id: string;
+}
+
+export interface Packs {
   id: string;
   name: string;
   themes: number[];

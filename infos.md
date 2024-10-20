@@ -26,3 +26,10 @@ No código tive 2 opções:
 3- Deixei o código que utilizei dentro do projeto ./PickMovies.ts (caso fiquem em dúvida de como foi feito.);
 
 Pensei em colocar mais usuários para baixar os filmes assim aceleraria o processo, mas como tive que sair de casa aproveitei para deixar um só e não explodir meu pc.
+
+User:
+```
+- Por o codigo não ser tão verboso deixei junto a parte de login com usuario e deixei o mais pratico possivel as 4 possibilidades de codigo.
+- Troca de senha e uma etapa de 2 fatores sem email...
+- (me) do usuario e possivel ver qual o pacote atual.
+```

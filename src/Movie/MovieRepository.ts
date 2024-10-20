@@ -55,7 +55,6 @@ class MovieRepository {
     orderBy?: OrderEnum,
   ): Promise<{ movies: Movies[]; total: number }> {
     try {
-      console.log(query);
       const total = await this.movieRepository.countDocuments(query);
       const movies = await this.movieRepository
         .find(query)

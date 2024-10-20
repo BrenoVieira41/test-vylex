@@ -10,9 +10,13 @@ import {
   setPagination,
   validateFields,
   validatePagination,
+  validateThemesId,
 } from '../Utils/UtilsService';
 import { FilterQuery } from 'mongoose';
 import { OrderEnum, PaginationType } from '../Utils/PaginationInterface';
+import { CustomJwtPayload } from '../User/UserEntity';
+import UserService from '../User/UserService';
+import { INVALID_USER_ERROR } from '../User/UserConstants';
 
 class MovieService {
   private readonly themeRepository: ThemeRepository;
@@ -68,17 +72,21 @@ class MovieService {
     }
   }
 
-  async order(query: MoviesPagination | any): Promise<PaginationType<Movies>> {
-    const { size, offset, title, theme_id, orderBy, ...rest } = query;
+  async order(query: MoviesPagination | any, user: CustomJwtPayload): Promise<PaginationType<Movies>> {
+    const { size, offset, title, themes, orderBy, ...rest } = query;
     validatePagination({ size, offset });
     validateFields(rest);
 
     if (title) this.validateTitle(title);
 
-    let themes_id = theme_id ? theme_id.split(',') : undefined;
-    if (theme_id && !themes_id.every(isNumeric))
-      throw createError('theme_id must be a number or an array of numbers', 400);
-    themes_id = themes_id ? themes_id.map(Number) : undefined;
+    const myUser = await UserService.me(user);
+
+    if (!myUser) throw createError(INVALID_USER_ERROR, 401);
+    if (!myUser.packs) throw createError('User does not have any packs. Please create a pack and try again.', 400);
+
+    const userThemes = myUser.packs.themes;
+
+    const themes_id = validateThemesId(themes, userThemes);
 
     if (orderBy && !Object.values(OrderEnum).includes(orderBy)) {
       throw createError('orderBy must be either "asc" or "desc"', 400);
@@ -86,24 +94,22 @@ class MovieService {
 
     try {
       const { size, offset } = setPagination(query);
-      const newQuery: FilterQuery<Movies> = {};
+      const newQuery: FilterQuery<Movies> = { theme_id: { $in: userThemes } };
 
-      if (themes_id && themes_id.length > 0) {
+      if (themes_id.length) {
         newQuery.theme_id = { $in: themes_id };
       }
 
       if (title) {
         const newTitle = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        newQuery.name = {
-          $regex: new RegExp(newTitle, 'i'),
-        };
+        newQuery.name = { $regex: new RegExp(newTitle, 'i') };
       }
-      const { movies, total } = await this.movieRepository.findAllPaginated(newQuery, size, offset, orderBy);
 
+      const { movies, total } = await this.movieRepository.findAllPaginated(newQuery, size, offset, orderBy);
       return paginate(size, offset, movies, total);
     } catch (error: any) {
-      console.error(error);
-      throw createError(error.message, 500);
+      const status = error.status ? error.status : 500;
+      throw createError(error.message, status);
     }
   }
 
@@ -138,7 +144,7 @@ class MovieService {
   }
 
   private validateTitle(title: string): void {
-    if (title.trim().length < 3) throw createError('Title must be at least 3 characters long', 400);
+    if (title.trim().length < 2) throw createError('Title must be at least 2 characters long', 400);
   }
 }
 

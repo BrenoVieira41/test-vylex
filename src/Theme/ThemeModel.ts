@@ -1,8 +1,14 @@
 import { Schema, model, Document } from 'mongoose';
+import { OrderEnum, Pagination } from '../Utils/PaginationInterface';
 
 export interface Themes extends Document {
   id: number;
   name: string;
+}
+
+export interface ThemesPagination extends Pagination {
+  orderBy?: OrderEnum;
+  themes: number[] | any;
 }
 
 export interface GenreResponse {

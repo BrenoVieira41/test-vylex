@@ -1,5 +1,6 @@
 import { FilterQuery } from 'mongoose';
 import { GenreResponse, Themes, ThemeModel } from './ThemeModel';
+import { OrderEnum } from '../Utils/PaginationInterface';
 
 class ThemeRepository {
   private readonly themeRepository: typeof ThemeModel;
@@ -60,13 +61,20 @@ class ThemeRepository {
     }
   }
 
-  async findAllPaginated(size: number, offset: number): Promise<{ themes: Themes[]; total: number }> {
+  async findAllPaginated(
+    query: FilterQuery<Themes>,
+    size: number,
+    offset: number,
+    orderBy?: OrderEnum,
+  ): Promise<{ themes: Themes[]; total: number }> {
     try {
       const total = await this.themeRepository.countDocuments();
       const themes = await this.themeRepository
-        .find()
+        .find(query)
+        .sort(orderBy ? { name: orderBy === OrderEnum.asc ? 1 : -1 } : {})
         .skip((offset - 1) * size)
-        .limit(size);
+        .limit(size)
+        .exec();
 
       return { themes, total };
     } catch (error) {

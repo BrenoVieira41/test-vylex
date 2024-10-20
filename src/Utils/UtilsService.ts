@@ -1,5 +1,7 @@
 import { Document } from 'mongoose';
 import { Pagination, PaginationType } from './PaginationInterface';
+import moment from 'moment';
+import { NO_EQUAL_THEME } from '../Pack/PackConstants';
 
 function clearMongoResponse(object: Document) {
   const response = object.toObject();
@@ -72,4 +74,39 @@ function validatePagination(input: Pagination): void {
   }
 }
 
-export { clearMongoResponse, validateFields, createError, isNumeric, validatePagination, setPagination, paginate };
+function parseDateString(dateString: string | Date): Date {
+  return moment(dateString, 'DD/MM/YYYY').toDate();
+}
+
+function formatDate(date: Date) {
+  return moment(date).format('DD/MM/YYYY');
+}
+
+function validateThemesId(theme_id: string | undefined, userThemes: number[]): number[] {
+  if (!theme_id) return [];
+
+  const themes_id = theme_id.split(',').map(Number);
+
+  const isValid = themes_id.every(isNumeric);
+  if (!isValid) throw createError('theme_id must be a number or an array of numbers', 400);
+
+  const invalidThemes = themes_id.filter((id) => !userThemes.includes(id));
+  if (invalidThemes.length > 0) {
+    throw createError(NO_EQUAL_THEME, 400);
+  }
+
+  return themes_id;
+}
+
+export {
+  clearMongoResponse,
+  validateFields,
+  createError,
+  isNumeric,
+  validatePagination,
+  setPagination,
+  paginate,
+  parseDateString,
+  formatDate,
+  validateThemesId,
+};
