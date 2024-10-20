@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "7777:7777"
+    environment:
+      - PORT=7777
+      - POSTGRES_URL=${POSTGRES_URL}
+      - MONGO_URL=${MONGO_URL}
+      - API_KEY=${API_KEY}
+      - API_BARREAR=${API_BARREAR}
+      - JWT_SECRET=${JWT_SECRET}
+      - MAX_RETRIES=${MAX_RETRIES}
+      - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - db
+      - mongo
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+volumes:
+  pgdata:
+  mongodata:
