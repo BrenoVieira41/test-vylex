@@ -15,7 +15,7 @@
 ## :mega: About
 Este projeto foi desenvolvido com o intuito de gerenciar os filmes assistidos pelos usuários, garantindo que eles possam registrar apenas aqueles que inseriram no sistema. A aplicação tem como objetivo oferecer uma experiência de organização e controle sobre o que foi assistido, com um sistema que evita duplicações e garante a integridade dos dados.
 
-## Running the code
+## Running
 
 #### :floppy_disk: Cloning
 ```ps
@@ -27,6 +27,17 @@ Este projeto foi desenvolvido com o intuito de gerenciar os filmes assistidos pe
 
 ```bash
 $ npm install
+```
+
+#### run migration
+```bash
+- criar ou adicionar .env
+
+# run migration
+npx prisma migrate dev
+
+# caso não possua algo para rodar visualizar o codigo
+npx prisma studio
 ```
 
 #### :arrow_forward: Running code
